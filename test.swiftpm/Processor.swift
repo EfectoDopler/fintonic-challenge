@@ -8,9 +8,6 @@
 import Foundation
 
 
-import Foundation
-
-typealias Scan = Order.Scan
 
 class Processor {
     private var target: Target?

@@ -3,6 +3,7 @@ import SwiftUI
 struct MainView: View {
     @State private var requestText: String
     @State private var showModal: Bool
+    @State private var showCreateOrderView: Bool = false
 
     private var processor: Processor
     private var target: Target
@@ -44,13 +45,15 @@ struct MainView: View {
                     }
                 }
                 Button("Create order") {
-                    processor.buttonClicked(rawOrder: requestText)
+                    showCreateOrderView = true
                 }
                 .padding(10)
                 .background(.green)
                 .foregroundStyle(.white)
+                .sheet(isPresented: $showCreateOrderView) {
+                    CreateOrderView()
+                }
             }
         }
     }
 }
-

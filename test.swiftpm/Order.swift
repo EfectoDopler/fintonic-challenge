@@ -7,6 +7,11 @@
 
 import Foundation
 
+typealias Scan = Order.Scan
+typealias Enemy = Order.Scan.Enemy
+typealias EnemyType = Order.Scan.Enemy.EnemyType
+typealias Coordinates = Order.Scan.Coordinates
+
 struct Order: Codable {
     let protocols: [Protocols]
     let scan: [Scan]

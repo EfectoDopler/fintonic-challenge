@@ -1,18 +1,10 @@
 import SwiftUI
 
 struct MainView: View {
-    @State private var requestText: String
-    @State private var showModal: Bool
-
-    private var processor: Processor
-    private var target: Target
+    @ObservedObject private var viewModel: MainViewModel
     
-    init() {
-        requestText = ""
-        showModal = false
-        target = .init(x: 0,
-                       y: 0)
-        processor = Processor()
+    init(viewModel: MainViewModel) {
+        self.viewModel = viewModel
     }
     
     var body: some View {
@@ -21,7 +13,7 @@ struct MainView: View {
                 HStack {
                     Spacer().frame(width: 10)
                     TextField("Orders",
-                              text: $requestText)
+                              text: $viewModel.requestText)
                     .padding(30)
                     .border(.gray)
                     Spacer()
@@ -30,22 +22,20 @@ struct MainView: View {
                 Spacer().frame(height: 20)
                 HStack(spacing: 20) {
                     Button("Send order") {
-                        processor.buttonClicked(rawOrder: requestText)
-                        showModal = true
+                        viewModel.buttonClicked()
                     }
                     .padding(10)
                     .background(.blue)
                     .foregroundStyle(.white)
-                    .sheet(isPresented: $showModal) {
-                        if processor.isValidTarget() {
-                            let target = processor.getTarget()
+                    .sheet(isPresented: $viewModel.showModal) {
+                        if viewModel.validateTarget() {
                             VStack(spacing: 20) {
-                                Text("X: \(target.x)")
-                                Text("Y: \(target.y)")
+                                Text("X: \(viewModel.target.x)")
+                                Text("Y: \(viewModel.target.y)")
                             }
                         }
                     }
-                    NavigationLink(destination: CreateOrderView()) {
+                    NavigationLink(destination: CreateOrderViewAssembler.assemble()) {
                         Text("Create order")
                             .padding(10)
                             .background(.green)

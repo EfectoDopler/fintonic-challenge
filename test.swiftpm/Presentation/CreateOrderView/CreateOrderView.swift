@@ -8,12 +8,12 @@
 import SwiftUI
 
 struct CreateOrderView: View {
-    @Environment(\.dismiss) private var dismiss
     @StateObject private var orderBuilder = OrderBuilder()
-    @State private var showResult = false
-    @State private var resultTarget: Target?
+    @ObservedObject private var viewModel: CreateOrderViewModel
     
-    private let processor = Processor()
+    init(viewModel: CreateOrderViewModel) {
+        self.viewModel = viewModel
+    }
     
     var body: some View {
         VStack {
@@ -53,8 +53,10 @@ struct CreateOrderView: View {
             }
             
             VStack(spacing: 10) {
-                ForEach($orderBuilder.scans) { $scan in
-                    ScanItemView(scan: $scan)
+                ScrollView {
+                    ForEach($orderBuilder.scans) { $scan in
+                        ScanItemView(scan: $scan)
+                    }
                 }
             }
             .padding(.horizontal, 10)
@@ -62,13 +64,6 @@ struct CreateOrderView: View {
             Spacer().frame(height: 20)
             
             HStack(spacing: 20) {
-                Button("Cancel") {
-                    dismiss()
-                }
-                .padding(10)
-                .background(.gray)
-                .foregroundStyle(.white)
-                
                 Button("Execute Order") {
                     executeOrder()
                 }
@@ -76,39 +71,31 @@ struct CreateOrderView: View {
                 .background(canExecute ? Color.green : Color.gray)
                 .foregroundStyle(.white)
                 .disabled(!canExecute)
-                .sheet(isPresented: $showResult) {
-                    if let target = resultTarget {
-                        VStack(spacing: 20) {
-                            Text("X: \(target.x)")
-                            Text("Y: \(target.y)")
-                        }
+                .sheet(isPresented: $viewModel.showResult) {
+                    VStack(spacing: 20) {
+                        Text("X: \(viewModel.target.x)")
+                        Text("Y: \(viewModel.target.y)")
                     }
                 }
             }
         }
     }
     
-    // MARK: - Computed Properties
     private var canExecute: Bool {
         !orderBuilder.selectedProtocols.isEmpty && !orderBuilder.scans.isEmpty
     }
     
-    // MARK: - Methods
     private func executeOrder() {
         guard let jsonString = orderBuilder.buildJSON() else {
             return
         }
         
-        processor.buttonClicked(rawOrder: jsonString)
-        
-        if processor.isValidTarget() {
-            resultTarget = processor.getTarget()
-            showResult = true
-        }
+        viewModel.buttonClicked(rawOrder: jsonString)
+        viewModel.validateTarget()
     }
 }
 
 // MARK: - Preview
 #Preview {
-    CreateOrderView()
+    CreateOrderViewAssembler.assemble()
 }
